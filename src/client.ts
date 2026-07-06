@@ -4,11 +4,11 @@ import crypto from "crypto"
 import * as ed from "@noble/ed25519";
 import fs from "fs";
 import { execSync, exec } from "child_process";
-import type { DownloadResponse, InitResponse, LoginResponse } from "./types/responses";
+import type { DownloadResponse, InitResponse, LicenseResponse, LoginResponse } from "./types/responses";
 import os from "os";
 import { createInterface } from "readline";
 import path from "node:path";
-import type { LoginOptions } from "./types/inputs";
+import type { LicenseOptions, LoginOptions } from "./types/inputs";
 const readline = createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -126,6 +126,34 @@ export default class EpicAuth {
             return this.fail(response['message'])
         }
 
+    }
+    /**
+     * Login to EpicAuth Using a license key.
+     * 
+     * @param license License key
+     * @param code Optional 2FA code if exist.
+     * @param hwid Optional custom HWID.
+     */
+    async license({ license, code, hwid }: LicenseOptions) {
+        this.checkinit();
+        if (!hwid) hwid = this.getHWID();
+        const body = {
+            "type": "license",
+            "name": this.name,
+            "ownerid": this.ownerid,
+            "sessionid": this.sessionid,
+            "key": license,
+            "hwid": hwid,
+            ...code && { "code": code },
+        };
+        const response = await this.request<LicenseResponse>(body);
+        if (response["success"] === true) {
+            console.log(response["message"]);
+            this.load_user_data(response["info"]);
+        } else {
+            console.log(response["message"]);
+            return this.fail(response['message'])
+        }
     }
     async checkinit() {
         if (!this.sessionid && !this.initialized) {

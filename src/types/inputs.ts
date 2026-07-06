@@ -4,3 +4,8 @@ export interface LoginOptions {
     code?: string;
     hwid?: string;
 }
+export interface LicenseOptions {
+    license: string;
+    code?: string;
+    hwid?: string;
+}

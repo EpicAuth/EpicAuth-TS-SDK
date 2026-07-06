@@ -27,7 +27,29 @@ export interface LoginResponse {
             timeleft: number;
             level: string;
         }[];
-        ip: string; hwid: string | undefined;
+        ip: string;
+        hwid: string | undefined;
+        createdate: string | number;
+        lastlogin: string;
+    },
+    nonce: string,
+    ownerid: string
+}
+export interface LicenseResponse {
+    success: boolean;
+    code: number;
+    message: string;
+    info: {
+        username: string;
+        subscriptions: {
+            subscription: string;
+            key: string;
+            expiry: string;
+            timeleft: number;
+            level: string;
+        }[];
+        ip: string;
+        hwid: string | undefined;
         createdate: string | number;
         lastlogin: string;
     },
