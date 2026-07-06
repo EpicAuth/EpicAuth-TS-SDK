@@ -144,6 +144,7 @@ export default class EpicAuth {
             "sessionid": this.sessionid,
             "key": license,
             "hwid": hwid,
+
             ...code && { "code": code },
         };
         const response = await this.request<LicenseResponse>(body);
