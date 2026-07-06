@@ -45,7 +45,7 @@ export default class EpicAuth {
     }
 
     async Init() {
-        if (!this.sessionid && !this.initialized) {
+        if (!this.sessionid && this.initialized) {
             return this.fail("Application already initialized", 0)
         }
         let token: string = "";
