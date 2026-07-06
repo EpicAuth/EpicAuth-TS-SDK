@@ -18,12 +18,14 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "bun --watch src/index.ts"
   },
   "private": false,
   "license": "Elastic-2.0",
   "dependencies": {
-    "@noble/ed25519": "^3.1.0"
+    "@noble/ed25519": "^3.1.0",
+    "@noble/hashes": "^2.2.0"
   },
   "devDependencies": {
     "@types/bun": "latest",

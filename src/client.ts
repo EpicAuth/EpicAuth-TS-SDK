@@ -9,6 +9,8 @@ import os from "os";
 import { createInterface } from "readline";
 import path from "node:path";
 import type { LicenseOptions, LoginOptions } from "./types/inputs";
+import { sha512 } from "@noble/hashes/sha2.js";
+ed.hashes.sha512 = (...msgs) => sha512(ed.etc.concatBytes(...msgs));
 const readline = createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -27,7 +29,7 @@ export default class EpicAuth {
     private sessionid?: string;
     private initialized: boolean = false;
 
-    private public_key: string = "5586b4bc69c7a4b487e4563a4cd96afd39140f919bd31cea7d1c6a1e8439422b";
+    private public_key: string = "95b38710f40927b16528a073b87d942e03bd4578d49963a19ebae177945f89ac";
     private loggingEnabled: boolean = true;
 
     public user_data: EpicAuthUserData | null = null;
@@ -37,11 +39,15 @@ export default class EpicAuth {
         this.name = options.name;
         this.ownerid = options.ownerid;
         this.version = options.version;
-        this.loggingEnabled = options.loggingEnabled ?? true;
         this.hash_to_check = options.hash_to_check;
         this.url = options.url ?? "https://epicauth.cc/api/1.3/";
         this.path = options.path;
+        this.loggingEnabled = options.loggingEnabled ?? true;
         this.exitOnError = options.exitOnError ?? true
+
+        if (!this.name || !this.ownerid || !this.version) {
+            throw new Error("Name, ownerid, and version are required");
+        }
     }
 
     async Init() {
@@ -252,19 +258,28 @@ export default class EpicAuth {
         body: Record<string, unknown>
     ): Promise<T> {
         try {
+            const params = new URLSearchParams();
+
+            for (const [key, value] of Object.entries(body)) {
+                if (value !== undefined) {
+                    params.append(key, String(value));
+                }
+            }
             const response = await fetch(this.url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
-                body: JSON.stringify(body)
+                body: params.toString(),
             });
 
             if (!response.ok) {
                 return this.fail(`HTTP ${response.status}`)
             }
 
-            const data = await response.json() as T;
+            const rawBody = await response.text();
+            if (rawBody === "EpicAuth_Invalid") { return rawBody as T; }
+            const data = JSON.parse(rawBody);
             const excludedfuncs = ["file", "log", "2faenable", "2fadisable"];
             if (excludedfuncs.includes(body.type as string)) {
                 return data;
@@ -287,7 +302,7 @@ export default class EpicAuth {
                     `Time difference is too large: ${time_difference} seconds, try syncing your date and time settings.`
                 );
             }
-            const message = new TextEncoder().encode(JSON.stringify(data));
+            const message = new TextEncoder().encode(timestamp + rawBody);
             const signatureBytes = ed.etc.hexToBytes(signature);
             const publicKeyBytes = ed.etc.hexToBytes(this.public_key);
             const valid = await ed.verify(signatureBytes, message, publicKeyBytes);
@@ -297,7 +312,7 @@ export default class EpicAuth {
             this.logEvent(JSON.stringify(data) + "\n");
             return data;
         } catch (error) {
-            return this.fail(`Unexpected error: error`);
+            return this.fail(`Unexpected error: ${error}`);
         }
     }
     private logEvent(message: string) {
