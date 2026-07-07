@@ -1,3 +1,6 @@
-import EpicAuth from "./client"
+// src/index.ts
+export { default as EpicAuth } from "./client";
+export { EpicAuthError } from "./errors";
 
-export default EpicAuth
+import EpicAuth from "./client";
+export default EpicAuth;
