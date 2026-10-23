@@ -31,7 +31,7 @@ export default class EpicAuth {
     private initialized: boolean = false;
 
     private public_key: string = "95b38710f40927b16528a073b87d942e03bd4578d49963a19ebae177945f89ac";
-    private loggingEnabled: boolean = true;
+    private loggingEnabled: boolean = false;
 
     public user_data: EpicAuthUserData | null = null;
     public app_data: EpicAuthAppData | null = null;
@@ -804,8 +804,8 @@ export default class EpicAuth {
         }
     }
     private logEvent(message: string) {
-        console.log(message)
         if (!this.loggingEnabled) return;
+        console.log(message)
         const executable = process.argv[1] ?? "unknown";
         const exeName = executable.split("\\").pop() ?? executable.split("/").pop() ?? "unknown";
         const logDirectory = path.join(

@@ -1,6 +1,6 @@
 {
   "name": "@epicauth/sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "EpicAuth SDK for Node.js and Bun",
   "type": "module",
   "main": "./dist/index.js",
