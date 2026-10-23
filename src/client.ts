@@ -43,7 +43,7 @@ export default class EpicAuth {
         this.hash_to_check = options.hash_to_check;
         this.url = options.url ?? "https://epicauth.cc/api/1.3/";
         this.path = options.path;
-        this.loggingEnabled = options.loggingEnabled ?? true;
+        this.loggingEnabled = options.loggingEnabled ?? false;
         this.exitOnError = options.exitOnError ?? true
 
         if (!this.name || !this.ownerid || !this.version) {
@@ -91,10 +91,10 @@ export default class EpicAuth {
             return this.fail("This application does not exist");
         }
 
-        if (response["message"] === "invalidver") {
+        if (response.message === "invalidver") {
             if ("download" in response) {
                 console.log("Your application is outdated.");
-                exec(`start ${response["download"]}`, (error) => {
+                exec(`start ${response.download}`, (error) => {
                     if (error) {
                         return this.fail(`Failed to open the download link:${error}`);
                     }
@@ -105,8 +105,8 @@ export default class EpicAuth {
             }
         }
 
-        if (response['success'] === false) {
-            return this.fail(response['message']);
+        if (response.success === false) {
+            return this.fail(response.message);
         }
         if ("sessionid" in response) {
             this.sessionid = response.sessionid;
@@ -136,12 +136,12 @@ export default class EpicAuth {
             ...code && { "code": code },
         };
         const response = await this.request<LoginResponse>(body);
-        if (response["success"] === true) {
-            console.log(response["message"]);
-            this.load_user_data(response["info"]);
+        if (response.success === true) {
+            this.logEvent(response.message);
+            this.load_user_data(response.info);
         } else {
-            console.log(response["message"]);
-            return this.fail(response['message'])
+            this.logEvent(response.message);
+            return this.fail(response.message)
         }
 
     }
@@ -166,12 +166,12 @@ export default class EpicAuth {
             ...code && { "code": code },
         };
         const response = await this.request<LicenseResponse>(body);
-        if (response["success"] === true) {
-            console.log(response["message"]);
-            this.load_user_data(response["info"]);
+        if (response.success === true) {
+            this.logEvent(response.message);
+            this.load_user_data(response.info);
         } else {
-            console.log(response["message"]);
-            return this.fail(response['message'])
+            this.logEvent(response.message);
+            return this.fail(response.message)
         }
     }
     /**
@@ -196,12 +196,12 @@ export default class EpicAuth {
             "hwid": hwid,
         };
         const response = await this.request<RegisterResponse>(body);
-        if (response["success"] === true) {
-            console.log(response["message"]);
-            this.load_user_data(response["info"]);
+        if (response.success === true) {
+            this.logEvent(response.message);
+            this.load_user_data(response.info);
         } else {
-            console.log(response["message"]);
-            return this.fail(response['message'])
+            this.logEvent(response.message);
+            return this.fail(response.message)
         }
     }
     /**
@@ -223,12 +223,12 @@ export default class EpicAuth {
             "key": license,
         };
         const response = await this.request<RegisterResponse>(body);
-        if (response["success"] === true) {
-            console.log(response["message"]);
+        if (response.success === true) {
+            this.logEvent(response.message);
             return this.fail("Restart the application to apply the changes.");
         } else {
-            console.log(response["message"]);
-            return this.fail(response['message'])
+            this.logEvent(response.message);
+            return this.fail(response.message)
         }
     }
     /**
@@ -246,10 +246,10 @@ export default class EpicAuth {
             "varid": name
         };
         const response = await this.request<VarResponse>(body);
-        if (response["success"] === true) {
-            console.log(response["message"]);
+        if (response.success === true) {
+            this.logEvent(response.message);
         } else {
-            this.fail(response["message"] ?? "var error");
+            this.fail(response.message ?? "var error");
         }
     }
     /**
@@ -267,10 +267,10 @@ export default class EpicAuth {
             "var": name
         };
         const response = await this.request<GetvarResponse>(body);
-        if (response["success"] === true) {
-            console.log(response["message"]);
+        if (response.success === true) {
+            this.logEvent(response.message);
         } else {
-            this.fail(response["message"] ?? "getvar error");
+            this.fail(response.message ?? "getvar error");
         }
     }
     /**
@@ -290,10 +290,10 @@ export default class EpicAuth {
             "data": value,
         };
         const response = await this.request<SetvarResponse>(body);
-        if (response["success"] === true) {
+        if (response.success === true) {
             return true
         } else {
-            this.fail(response["message"] ?? "setvar error");
+            this.fail(response.message ?? "setvar error");
         }
     }
     /**
@@ -310,10 +310,10 @@ export default class EpicAuth {
             "sessionid": this.sessionid,
         };
         const response = await this.request<BanResponse>(body);
-        if (response["success"] === true) {
+        if (response.success === true) {
             return true
         } else {
-            this.fail(response["message"]);
+            this.fail(response.message);
         }
     }
     /**
@@ -332,10 +332,10 @@ export default class EpicAuth {
             "fileid": id
         };
         const response = await this.request<FileResponse>(body);
-        if (response["success"] === true) {
-            return Buffer.from(response['contents']);
+        if (response.success === true) {
+            return Buffer.from(response.contents);
         } else {
-            this.fail(response["message"]);
+            this.fail(response.message);
         }
     }
     /**
@@ -356,10 +356,10 @@ export default class EpicAuth {
             "conttype": conttype,
         };
         const response = await this.request<WebhookResponse>(data);
-        if (response["success"] === true) {
-            return response['message'];
+        if (response.success === true) {
+            return response.message;
         } else {
-            this.fail(response["message"]);
+            this.fail(response.message);
         }
     }
     /**
@@ -376,10 +376,10 @@ export default class EpicAuth {
             "sessionid": this.sessionid,
         }
         const response = await this.request<CheckResponse>(body);
-        if (response["success"] === true) {
+        if (response.success === true) {
             return true;
         } else {
-            this.fail(response["message"]);
+            this.fail(response.message);
         }
     }
     /**
@@ -398,10 +398,10 @@ export default class EpicAuth {
             "hwid": hwid,
         };
         const response = await this.request<CheckBlacklistResponse>(body);
-        if (response["success"] === true) {
+        if (response.success === true) {
             return true;
         } else {
-            this.fail(response["message"]);
+            this.fail(response.message);
         }
     }
     /**
@@ -435,9 +435,9 @@ export default class EpicAuth {
             "sessionid": this.sessionid,
         }
         const response = await this.request<fetchOnlineResponse | fetchOnlineResponse2>(body);
-        if (response["success"] === true) {
+        if (response.success === true) {
             if ("users" in response) {
-                return Number(response['users'])
+                return Number(response.users)
             } else {
                 return null
             }
@@ -459,8 +459,8 @@ export default class EpicAuth {
             "sessionid": this.sessionid,
         };
         const response = await this.request<fetchStatsResponse>(body);
-        if (response["success"] === true) {
-            return this.load_app_data(response['appinfo'])
+        if (response.success === true) {
+            return this.load_app_data(response.appinfo)
         }
     }
     /**
@@ -479,8 +479,8 @@ export default class EpicAuth {
             "channel": channel,
         };
         const response = await this.request<ChatGetResponse>(body);
-        if (response["success"] === true) {
-            return response["messages"];
+        if (response.success === true) {
+            return response.messages;
         } else {
             return false;
         }
@@ -503,7 +503,7 @@ export default class EpicAuth {
             "message": message,
         };
         const response = await this.request<ChatSendResponse>(body);
-        if (response["success"] === true) {
+        if (response.success === true) {
             return true;
         } else {
             return false;
@@ -525,7 +525,7 @@ export default class EpicAuth {
             "sessionid": this.sessionid,
         };
         const response = await this.request<ChangeUsernameResponse>(body);
-        if (response["success"] === true) {
+        if (response.success === true) {
             console.log("Username changed successfully");
         } else {
             return false;
@@ -544,10 +544,10 @@ export default class EpicAuth {
             "sessionid": this.sessionid,
         };
         const response = await this.request<LogoutResponse>(body);
-        if (response["success"] === true) {
+        if (response.success === true) {
             this.fail("Logged out successfully");
         } else {
-            this.fail(response["message"]);
+            this.fail(response.message);
         }
     }
     /**
@@ -567,12 +567,12 @@ export default class EpicAuth {
 
         const response = await this.request<Enable2faResponse>(post_data);
 
-        if (response["success"] === true) {
+        if (response.success === true) {
             if (!code) {
                 console.log(response);
-                console.log("Your 2fa secret code is: " + response["2fa"]["secret_code"]);
+                console.log("Your 2fa secret code is: " + response["2fa"].secret_code);
 
-                this.displayQrCode(response["2fa"]["QRCode"]);
+                this.displayQrCode(response["2fa"].QRCode);
                 console.log("Please enter the code you received in your authenticator app.");
 
                 const userCode = await new Promise<string>((resolve) => {
@@ -586,7 +586,7 @@ export default class EpicAuth {
                 console.log("2FA enabled successfully");
             }
         } else {
-            console.log(response["message"]);
+            this.logEvent(response.message);
             this.sleep(5000);
             process.exit(0);
         }
@@ -611,7 +611,7 @@ export default class EpicAuth {
             "code": code,
         };
         const response = await this.request<Disable2faResponse>(post_data);
-        console.log(response["message"]);
+        this.logEvent(response.message);
         await this.sleep(5000);
     }
     async checkinit() {
