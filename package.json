@@ -17,8 +17,13 @@
     "README.md",
     "LICENSE"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EpicAuth/EpicAuth-TS-SDK.git"
+  },
   "scripts": {
     "build": "tsc",
+    "typecheck": "bunx tsc --noEmit",
     "dev": "bun --watch src/index.ts"
   },
   "private": false,
